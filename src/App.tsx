@@ -3,13 +3,18 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Test from "./pages/Test";
 import MobileApp from "./pages/MobileApp";
+import { NativeAppProvider } from "./components/NativeAppProvider";
 
 const queryClient = new QueryClient();
+
+// Detect if running in native Capacitor app
+const isNative = Capacitor.isNativePlatform();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -17,14 +22,23 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/test" element={<Test />} />
-          <Route path="/mobile" element={<MobileApp />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        {isNative ? (
+          <NativeAppProvider>
+            <Routes>
+              <Route path="/" element={<MobileApp />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="*" element={<MobileApp />} />
+            </Routes>
+          </NativeAppProvider>
+        ) : (
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/test" element={<Test />} />
+            <Route path="/mobile" element={<MobileApp />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        )}
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
