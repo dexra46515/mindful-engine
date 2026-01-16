@@ -41,18 +41,16 @@ export const useNativeApp = () => useContext(NativeAppContext);
 
 interface NativeAppProviderProps {
   children: React.ReactNode;
-  supabaseUrl: string;
-  supabaseAnonKey: string;
 }
+
+// Supabase config from environment
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 // Module-level flag to prevent double initialization on hot reload
 let sdkInitStarted = false;
 
-export function NativeAppProvider({ 
-  children, 
-  supabaseUrl, 
-  supabaseAnonKey 
-}: NativeAppProviderProps) {
+export function NativeAppProvider({ children }: NativeAppProviderProps) {
   const [isReady, setIsReady] = useState(false);
   const [sdkInitialized, setSdkInitialized] = useState(false);
   const [tokenLoaded, setTokenLoaded] = useState(false);
@@ -90,8 +88,8 @@ export function NativeAppProvider({
         // ==========================================
         console.log('[NativeApp] Step 1: Initializing SDK...');
         const initResult = await SDK.init({
-          supabaseUrl,
-          supabaseAnonKey,
+          supabaseUrl: SUPABASE_URL,
+          supabaseAnonKey: SUPABASE_ANON_KEY,
           logLevel: 'debug',
         });
         
@@ -183,7 +181,7 @@ export function NativeAppProvider({
       SDK.cleanup();
       sdkInitStarted = false;
     };
-  }, [supabaseUrl, supabaseAnonKey]);
+  }, []);
 
   const contextValue: NativeAppContextValue = {
     isNative,
