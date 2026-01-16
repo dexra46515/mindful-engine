@@ -40,11 +40,11 @@ export default function Auth() {
       
       toast({
         title: "Account created!",
-        description: "Redirecting to app...",
+        description: "Let's set up your profile...",
       });
       
-      // Force reload to reinitialize with new token
-      window.location.href = '/';
+      // Redirect to onboarding for new users
+      navigate('/onboarding');
     }
 
     setLoading(false);
@@ -69,13 +69,28 @@ export default function Auth() {
       // Save token to SDK's TokenManager
       await SDK.auth.setToken(data.session.access_token, data.user.id);
       
+      // Check if user has completed onboarding (has a role)
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .maybeSingle();
+
+      if (!roleData) {
+        // New user, needs onboarding
+        navigate('/onboarding');
+      } else if (roleData.role === 'parent') {
+        // Parent user
+        navigate('/parent');
+      } else {
+        // Youth user - reload to reinitialize SDK
+        window.location.href = '/';
+      }
+      
       toast({
         title: "Welcome back!",
-        description: "Redirecting to app...",
+        description: "Redirecting...",
       });
-      
-      // Force reload to reinitialize with new token
-      window.location.href = '/';
     }
 
     setLoading(false);
@@ -85,9 +100,9 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Behavioral Engine Test</CardTitle>
+          <CardTitle className="text-2xl">Mindful Engine</CardTitle>
           <CardDescription>
-            Sign up or log in to test the multi-agent system
+            Sign up or log in to get started
           </CardDescription>
         </CardHeader>
         <CardContent>
