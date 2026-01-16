@@ -29,9 +29,20 @@ export function initSupabaseClient(url: string, anonKey: string): SupabaseClient
 }
 
 /**
- * Get pending interventions for the current user
+ * Wait helper for delays
  */
-export async function getInterventions(): Promise<InterventionResponse> {
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Get pending interventions for the current user
+ * @param delayMs - Optional delay before fetching (orchestrator may need time to finish)
+ */
+export async function getInterventions(delayMs = 0): Promise<InterventionResponse> {
+  // Add delay if specified (orchestrator sometimes needs 50-150ms to finish)
+  if (delayMs > 0) {
+    await wait(delayMs);
+  }
+
   const userId = TokenManager.getUserId();
   const token = TokenManager.getToken();
 
