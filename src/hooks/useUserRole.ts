@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-type UserRole = 'parent' | 'youth' | 'admin' | null;
+type UserRole = 'parent' | 'youth' | 'admin' | 'adult' | null;
 
 interface UseUserRoleReturn {
   role: UserRole;
@@ -14,6 +14,9 @@ interface UseUserRoleReturn {
   isParent: boolean;
   isYouth: boolean;
   isAdmin: boolean;
+  isAdult: boolean;
+  /** True if user is adult or youth (self-tracking roles) */
+  isSelfUser: boolean;
   hasRole: boolean;
   refetch: () => Promise<void>;
 }
@@ -74,6 +77,8 @@ export function useUserRole(): UseUserRoleReturn {
     isParent: role === 'parent',
     isYouth: role === 'youth',
     isAdmin: role === 'admin',
+    isAdult: role === 'adult',
+    isSelfUser: role === 'adult' || role === 'youth',
     hasRole: role !== null,
     refetch: fetchRole,
   };

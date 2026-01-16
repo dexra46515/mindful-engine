@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Users, User, Shield, Heart } from 'lucide-react';
 
 type OnboardingStep = 'role' | 'profile' | 'family' | 'complete';
-type UserRole = 'parent' | 'youth';
+type UserRole = 'parent' | 'youth' | 'adult';
 
 export default function Onboarding() {
   const [step, setStep] = useState<OnboardingStep>('role');
@@ -80,12 +80,14 @@ export default function Onboarding() {
 
       if (profileError) throw profileError;
 
-      // Assign role
+      // Assign role - map 'adult' to 'youth' in DB (adults are self-tracking youth without family)
+      const dbRole = selectedRole === 'adult' ? 'youth' : selectedRole;
+      
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert({
           user_id: userId,
-          role: selectedRole,
+          role: dbRole,
         });
 
       if (roleError && !roleError.message.includes('duplicate')) {
@@ -97,7 +99,13 @@ export default function Onboarding() {
         description: `You're set up as a ${selectedRole}.`,
       });
 
-      // Move to family setup
+      // Adults skip family setup entirely
+      if (selectedRole === 'adult') {
+        setStep('complete');
+        return;
+      }
+
+      // Move to family setup for parent/youth
       if (selectedRole === 'parent') {
         // Generate and store invite code in database
         const code = generateFamilyCode();
@@ -205,6 +213,7 @@ export default function Onboarding() {
     if (selectedRole === 'parent') {
       navigate('/parent');
     } else {
+      // Both youth and adult go to main app
       window.location.href = '/';
     }
   };
@@ -269,6 +278,23 @@ export default function Onboarding() {
                     <h3 className="font-semibold text-lg">I'm a Youth</h3>
                     <p className="text-sm text-muted-foreground mt-1">
                       Get gentle nudges to help build healthy digital habits
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => handleRoleSelect('adult')}
+                className="w-full p-6 rounded-xl border-2 border-muted hover:border-primary hover:bg-primary/5 transition-all text-left group"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Heart className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">I'm an Adult (for myself)</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Personal digital wellbeing without family features
                     </p>
                   </div>
                 </div>
@@ -395,6 +421,8 @@ export default function Onboarding() {
               <CardDescription>
                 {selectedRole === 'parent'
                   ? 'Your dashboard is ready. You can monitor your family\'s digital wellbeing.'
+                  : selectedRole === 'adult'
+                  ? 'Track your own digital habits and get personalized insights.'
                   : 'Start using the app mindfully. We\'ll help you build healthy habits.'}
               </CardDescription>
             </CardHeader>
