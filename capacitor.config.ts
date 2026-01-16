@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Behavioral Engine',
   webDir: 'dist',
   server: {
-    url: 'https://b9bc5574-7773-4076-b710-d1364bf57e42.lovableproject.com?forceHideBadge=true',
+    url: 'https://id-preview--b9bc5574-7773-4076-b710-d1364bf57e42.lovable.app?forceHideBadge=true',
     cleartext: true,
   },
   plugins: {
