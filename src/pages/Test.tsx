@@ -96,7 +96,8 @@ export default function Test() {
         addLog('risk', `Current: ${riskResult.riskState.level} (${riskResult.riskState.score})`);
       }
 
-      const intResult = await getInterventions();
+      // Add small delay for orchestrator to finish
+      const intResult = await getInterventions(100);
       if (intResult.success && intResult.interventions) {
         setInterventions(intResult.interventions);
         addLog('interventions', `Loaded ${intResult.interventions.length} pending`);
@@ -216,7 +217,24 @@ export default function Test() {
     await handleSendEvent('reopen');
     await handleSendEvent('scroll', { velocity: 3000 });
     await handleSendEvent('scroll', { velocity: 3500 });
-    addLog('test', '🧪 Simulation complete - check for intervention');
+    addLog('test', '🧪 Simulation complete - checking for interventions...');
+    
+    // Wait for orchestrator then refresh interventions
+    const intResult = await getInterventions(150);
+    if (intResult.success && intResult.interventions) {
+      setInterventions(intResult.interventions);
+      addLog('interventions', `Found ${intResult.interventions.length} pending after simulation`);
+    }
+  };
+
+  // Refresh risk state (manual trigger)
+  const handleRefreshRisk = async () => {
+    addLog('risk', 'Refreshing risk state...');
+    const riskResult = await getRiskState();
+    if (riskResult.success && riskResult.riskState) {
+      setRiskState(riskResult.riskState);
+      addLog('risk', `✅ ${riskResult.riskState.level} (${riskResult.riskState.score})`);
+    }
   };
 
   const handleSignOut = async () => {
@@ -253,26 +271,59 @@ export default function Test() {
             {/* Risk State */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  Risk State
-                  {riskState && (
-                    <Badge variant={
-                      riskState.level === 'critical' ? 'destructive' :
-                      riskState.level === 'high' ? 'destructive' :
-                      riskState.level === 'medium' ? 'secondary' : 'outline'
-                    }>
-                      {riskState.level.toUpperCase()} ({riskState.score})
-                    </Badge>
-                  )}
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    Risk State
+                    {riskState && (
+                      <Badge variant={
+                        riskState.level === 'critical' ? 'destructive' :
+                        riskState.level === 'high' ? 'destructive' :
+                        riskState.level === 'medium' ? 'secondary' : 'outline'
+                      }>
+                        {riskState.level.toUpperCase()} ({riskState.score})
+                      </Badge>
+                    )}
+                  </span>
+                  <Button size="sm" variant="ghost" onClick={handleRefreshRisk}>
+                    ↻ Refresh
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {riskState ? (
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>Session Duration: <strong>{riskState.factors.sessionDuration}</strong></div>
-                    <div>Reopen Frequency: <strong>{riskState.factors.reopenFrequency}</strong></div>
-                    <div>Late Night: <strong>{riskState.factors.lateNight}</strong></div>
-                    <div>Scroll Velocity: <strong>{riskState.factors.scrollVelocity}</strong></div>
+                  <div className="space-y-3">
+                    {/* Visual risk bar */}
+                    <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-500 ${
+                          riskState.level === 'critical' ? 'bg-red-500' :
+                          riskState.level === 'high' ? 'bg-orange-500' :
+                          riskState.level === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                        }`}
+                        style={{ width: `${riskState.score}%` }}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex justify-between p-2 bg-muted rounded">
+                        <span>Session Duration</span>
+                        <strong>{riskState.factors.sessionDuration}</strong>
+                      </div>
+                      <div className="flex justify-between p-2 bg-muted rounded">
+                        <span>Reopen Frequency</span>
+                        <strong>{riskState.factors.reopenFrequency}</strong>
+                      </div>
+                      <div className="flex justify-between p-2 bg-muted rounded">
+                        <span>Late Night</span>
+                        <strong>{riskState.factors.lateNight}</strong>
+                      </div>
+                      <div className="flex justify-between p-2 bg-muted rounded">
+                        <span>Scroll Velocity</span>
+                        <strong>{riskState.factors.scrollVelocity}</strong>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Last evaluated: {riskState.lastEvaluatedAt ? new Date(riskState.lastEvaluatedAt).toLocaleTimeString() : 'N/A'}
+                    </p>
                   </div>
                 ) : (
                   <p className="text-muted-foreground">No risk state yet</p>

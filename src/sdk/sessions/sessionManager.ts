@@ -24,12 +24,23 @@ class SessionManagerClass {
   private state: 'active' | 'paused' | 'ended' = 'ended';
 
   /**
-   * Start a new session
+   * Start a new session with retry logic
    */
-  async start(): Promise<{ success: boolean; session?: SessionInfo; error?: string }> {
+  async start(retries = 3, retryDelayMs = 150): Promise<{ success: boolean; session?: SessionInfo; error?: string }> {
+    // Retry if token isn't ready yet
+    for (let attempt = 0; attempt < retries; attempt++) {
+      const userId = TokenManager.getUserId();
+      if (userId) break;
+      
+      if (attempt < retries - 1) {
+        log(`[SessionManager] Token not ready, retry ${attempt + 1}/${retries}...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+      }
+    }
+
     const userId = TokenManager.getUserId();
     if (!userId) {
-      return { success: false, error: 'Not authenticated' };
+      return { success: false, error: 'Not authenticated after retries' };
     }
 
     const deviceInfo = getDeviceInfo();
