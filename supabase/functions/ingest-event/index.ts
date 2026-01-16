@@ -64,6 +64,7 @@ serve(async (req) => {
 
     const results = [];
     let activeSessionId: string | null = null;
+    let activeDeviceId: string | null = null;
 
     for (const eventPayload of events) {
       // ========================================
@@ -90,6 +91,8 @@ serve(async (req) => {
         results.push({ success: false, error: deviceError.message });
         continue;
       }
+
+      activeDeviceId = device.id;
 
       // ========================================
       // HANDLE SESSION MANAGEMENT
@@ -243,6 +246,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
+      session_id: activeSessionId,
+      device_id: activeDeviceId,
       results,
       execution_time_ms: executionTime,
     }), {
