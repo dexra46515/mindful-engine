@@ -1,0 +1,22 @@
+project_id = "egkyzyptlecrzchteekr"
+
+[functions.orchestrator]
+verify_jwt = false
+
+[functions.risk-agent]
+verify_jwt = false
+
+[functions.intervention-agent]
+verify_jwt = false
+
+[functions.feedback-agent]
+verify_jwt = false
+
+[functions.ingest-event]
+verify_jwt = false
+
+[functions.respond-intervention]
+verify_jwt = false
+
+[functions.parent-api]
+verify_jwt = false
