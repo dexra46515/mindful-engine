@@ -12,6 +12,7 @@ import MobileApp from "./pages/MobileApp";
 import Onboarding from "./pages/Onboarding";
 import ParentDashboard from "./pages/ParentDashboard";
 import { NativeAppProvider } from "./components/NativeAppProvider";
+import { InterventionProvider } from "./components/interventions/InterventionProvider";
 
 const queryClient = new QueryClient();
 
@@ -21,31 +22,33 @@ const isNative = Capacitor.isNativePlatform();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        {isNative ? (
-          <NativeAppProvider>
+      <InterventionProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          {isNative ? (
+            <NativeAppProvider>
+              <Routes>
+                <Route path="/" element={<MobileApp />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/parent" element={<ParentDashboard />} />
+                <Route path="*" element={<MobileApp />} />
+              </Routes>
+            </NativeAppProvider>
+          ) : (
             <Routes>
-              <Route path="/" element={<MobileApp />} />
+              <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/parent" element={<ParentDashboard />} />
-              <Route path="*" element={<MobileApp />} />
+              <Route path="/test" element={<Test />} />
+              <Route path="/mobile" element={<MobileApp />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
-          </NativeAppProvider>
-        ) : (
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/parent" element={<ParentDashboard />} />
-            <Route path="/test" element={<Test />} />
-            <Route path="/mobile" element={<MobileApp />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        )}
-      </BrowserRouter>
+          )}
+        </BrowserRouter>
+      </InterventionProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
