@@ -151,18 +151,31 @@ serve(async (req) => {
     }
 
     // 4. SCROLL VELOCITY FACTOR (0-25 points)
-    if (recentEvents && input.event_data?.scroll_velocity) {
-      const velocity = input.event_data.scroll_velocity as number;
+    // Check both current event and recent scroll events for velocity
+    const currentVelocity = (input.event_data?.scroll_velocity || input.event_data?.velocity) as number | undefined;
+    const recentScrollEvents = recentEvents?.filter(e => e.event_type === 'scroll') || [];
+    
+    // Get max velocity from recent scroll events or current event
+    let maxVelocity = currentVelocity || 0;
+    for (const scrollEvent of recentScrollEvents) {
+      const eventData = scrollEvent.event_data as Record<string, unknown> | null;
+      const v = (eventData?.velocity || eventData?.scroll_velocity) as number | undefined;
+      if (v && v > maxVelocity) {
+        maxVelocity = v;
+      }
+    }
+
+    if (maxVelocity > 0) {
       const threshold = policy?.scroll_velocity_threshold || 1000;
 
-      if (velocity >= threshold * 2) {
+      if (maxVelocity >= threshold * 2) {
         factors.scroll_velocity_factor = 25;
-      } else if (velocity >= threshold * 1.5) {
+      } else if (maxVelocity >= threshold * 1.5) {
         factors.scroll_velocity_factor = 15;
-      } else if (velocity >= threshold) {
+      } else if (maxVelocity >= threshold) {
         factors.scroll_velocity_factor = 10;
       }
-      console.log('[RiskAgent] Scroll velocity:', velocity, ', factor:', factors.scroll_velocity_factor);
+      console.log('[RiskAgent] Max scroll velocity:', maxVelocity, ', factor:', factors.scroll_velocity_factor);
     }
 
     // ========================================
