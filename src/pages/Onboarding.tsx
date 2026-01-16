@@ -70,13 +70,16 @@ export default function Onboarding() {
     setLoading(true);
     
     try {
-      // Create profile
+      // Create or update profile - use onConflict to handle existing profiles
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: userId,
-          display_name: displayName || (selectedRole === 'parent' ? 'Parent' : 'Youth'),
-        });
+        .upsert(
+          {
+            user_id: userId,
+            display_name: displayName || (selectedRole === 'parent' ? 'Parent' : selectedRole === 'adult' ? 'User' : 'Youth'),
+          },
+          { onConflict: 'user_id' }
+        );
 
       if (profileError) throw profileError;
 
@@ -85,14 +88,15 @@ export default function Onboarding() {
       
       const { error: roleError } = await supabase
         .from('user_roles')
-        .insert({
-          user_id: userId,
-          role: dbRole,
-        });
+        .upsert(
+          {
+            user_id: userId,
+            role: dbRole,
+          },
+          { onConflict: 'user_id' }
+        );
 
-      if (roleError && !roleError.message.includes('duplicate')) {
-        throw roleError;
-      }
+      if (roleError) throw roleError;
 
       toast({
         title: 'Profile created!',
