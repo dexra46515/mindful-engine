@@ -9,6 +9,8 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Test from "./pages/Test";
 import MobileApp from "./pages/MobileApp";
+import Onboarding from "./pages/Onboarding";
+import ParentDashboard from "./pages/ParentDashboard";
 import { NativeAppProvider } from "./components/NativeAppProvider";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<MobileApp />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/parent" element={<ParentDashboard />} />
               <Route path="*" element={<MobileApp />} />
             </Routes>
           </NativeAppProvider>
@@ -34,6 +38,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/parent" element={<ParentDashboard />} />
             <Route path="/test" element={<Test />} />
             <Route path="/mobile" element={<MobileApp />} />
             <Route path="*" element={<NotFound />} />
