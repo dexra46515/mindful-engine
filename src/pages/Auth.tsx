@@ -40,9 +40,11 @@ export default function Auth() {
       
       toast({
         title: "Account created!",
-        description: "You can now test the behavioral engine.",
+        description: "Redirecting to app...",
       });
-      navigate("/mobile");
+      
+      // Force reload to reinitialize with new token
+      window.location.href = '/';
     }
 
     setLoading(false);
@@ -69,9 +71,11 @@ export default function Auth() {
       
       toast({
         title: "Welcome back!",
-        description: "Redirecting to mobile app...",
+        description: "Redirecting to app...",
       });
-      navigate("/mobile");
+      
+      // Force reload to reinitialize with new token
+      window.location.href = '/';
     }
 
     setLoading(false);

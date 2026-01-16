@@ -25,37 +25,49 @@ export default function MobileApp() {
     setEventLog(prev => [`[${time}] ${msg}`, ...prev.slice(0, 19)]);
   };
 
-  // Check auth and load state
+  // Check auth on mount AND when SDK initializes
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuth = () => {
       const authenticated = SDK.auth.isAuthenticated();
       setIsAuthenticated(authenticated);
       addLog(`Auth check: ${authenticated ? '✅ authenticated' : '❌ not authenticated'}`);
-
-      if (authenticated && sdkInitialized) {
-        // Load initial state with delay for orchestrator
-        setTimeout(async () => {
-          const [riskResult, interventionsResult] = await Promise.all([
-            SDK.risk.getState(),
-            SDK.interventions.get(100),
-          ]);
-
-          if (riskResult.success && riskResult.riskState) {
-            setRiskState(riskResult.riskState);
-            addLog(`Risk loaded: ${riskResult.riskState.level} (${riskResult.riskState.score})`);
-          }
-
-          if (interventionsResult.success && interventionsResult.interventions) {
-            setInterventions(interventionsResult.interventions);
-            addLog(`Interventions loaded: ${interventionsResult.interventions.length}`);
-          }
-        }, 200);
-      }
+      return authenticated;
     };
 
-    if (sdkInitialized) {
-      checkAuth();
+    // Check immediately
+    const authenticated = checkAuth();
+
+    // If authenticated and SDK ready, load data
+    if (authenticated && sdkInitialized) {
+      setTimeout(async () => {
+        const [riskResult, interventionsResult] = await Promise.all([
+          SDK.risk.getState(),
+          SDK.interventions.get(100),
+        ]);
+
+        if (riskResult.success && riskResult.riskState) {
+          setRiskState(riskResult.riskState);
+          addLog(`Risk loaded: ${riskResult.riskState.level} (${riskResult.riskState.score})`);
+        }
+
+        if (interventionsResult.success && interventionsResult.interventions) {
+          setInterventions(interventionsResult.interventions);
+          addLog(`Interventions loaded: ${interventionsResult.interventions.length}`);
+        }
+      }, 200);
     }
+
+    // Re-check auth every second for 5 seconds (handles async token save)
+    let checks = 0;
+    const interval = setInterval(() => {
+      checks++;
+      const nowAuth = checkAuth();
+      if (nowAuth || checks >= 5) {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, [sdkInitialized]);
 
   // Subscribe to realtime updates (handled by NativeAppProvider, but we add local handlers)
