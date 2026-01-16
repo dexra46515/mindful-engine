@@ -35,8 +35,9 @@ class SessionManagerClass {
     const deviceInfo = getDeviceInfo();
 
     const response = await apiRequest<{
-      session_id: string;
-      device_id: string;
+      success: boolean;
+      session_id: string | null;
+      device_id: string | null;
     }>(ENDPOINTS.INGEST_EVENT, 'POST', {
       user_id: userId,
       event_type: 'session_start',
@@ -45,9 +46,9 @@ class SessionManagerClass {
       event_data: {},
     });
 
-    if (response.success && response.data) {
+    if (response.success && response.data?.session_id) {
       this.sessionId = response.data.session_id;
-      this.deviceId = response.data.device_id;
+      this.deviceId = response.data.device_id || null;
       this.startedAt = new Date().toISOString();
       this.state = 'active';
 
@@ -56,6 +57,24 @@ class SessionManagerClass {
       return {
         success: true,
         session: this.getSessionInfo()!,
+      };
+    }
+
+    // Session might have been created even if response doesn't have session_id
+    // This can happen if user already has an active session (reopen)
+    if (response.success) {
+      this.startedAt = new Date().toISOString();
+      this.state = 'active';
+      log('[SessionManager] Session resumed (existing)');
+      
+      return {
+        success: true,
+        session: {
+          sessionId: this.sessionId || 'active',
+          deviceId: this.deviceId || '',
+          startedAt: this.startedAt,
+          state: 'active',
+        },
       };
     }
 
