@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import SDK from "@/sdk";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -19,7 +20,7 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -33,12 +34,15 @@ export default function Auth() {
         title: "Sign up failed",
         description: error.message,
       });
-    } else {
+    } else if (data.session && data.user) {
+      // Save token to SDK's TokenManager
+      await SDK.auth.setToken(data.session.access_token, data.user.id);
+      
       toast({
         title: "Account created!",
         description: "You can now test the behavioral engine.",
       });
-      navigate("/test");
+      navigate("/mobile");
     }
 
     setLoading(false);
@@ -48,7 +52,7 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -59,12 +63,15 @@ export default function Auth() {
         title: "Sign in failed",
         description: error.message,
       });
-    } else {
+    } else if (data.session && data.user) {
+      // Save token to SDK's TokenManager
+      await SDK.auth.setToken(data.session.access_token, data.user.id);
+      
       toast({
         title: "Welcome back!",
-        description: "Redirecting to test page...",
+        description: "Redirecting to mobile app...",
       });
-      navigate("/test");
+      navigate("/mobile");
     }
 
     setLoading(false);
