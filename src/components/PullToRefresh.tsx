@@ -3,7 +3,7 @@
  * Native-style pull-to-refresh gesture for mobile apps
  */
 
-import { useState, useRef, useCallback, ReactNode } from 'react';
+import { useState, useRef, useCallback, ReactNode, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -20,7 +20,7 @@ export function PullToRefresh({
   children, 
   className,
   disabled = false,
-  threshold = 80 
+  threshold = 60 
 }: PullToRefreshProps) {
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -28,30 +28,49 @@ export function PullToRefresh({
   
   const containerRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
-  const currentY = useRef(0);
+  const isAtTop = useRef(true);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+  // Check if page is at top
+  const checkIfAtTop = useCallback(() => {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    isAtTop.current = scrollTop <= 0;
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('scroll', checkIfAtTop, { passive: true });
+    checkIfAtTop();
+    return () => window.removeEventListener('scroll', checkIfAtTop);
+  }, [checkIfAtTop]);
+
+  const handleTouchStart = useCallback((e: TouchEvent) => {
     if (disabled || isRefreshing) return;
     
-    const container = containerRef.current;
-    if (!container) return;
+    checkIfAtTop();
     
-    // Only activate if scrolled to top
-    if (container.scrollTop <= 0) {
+    if (isAtTop.current) {
       startY.current = e.touches[0].clientY;
       setIsPulling(true);
     }
-  }, [disabled, isRefreshing]);
+  }, [disabled, isRefreshing, checkIfAtTop]);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: TouchEvent) => {
     if (!isPulling || disabled || isRefreshing) return;
+    if (!isAtTop.current) {
+      setPullDistance(0);
+      return;
+    }
     
-    currentY.current = e.touches[0].clientY;
-    const distance = Math.max(0, currentY.current - startY.current);
+    const currentY = e.touches[0].clientY;
+    const distance = currentY - startY.current;
     
-    // Apply resistance for natural feel
-    const resistedDistance = Math.min(distance * 0.5, threshold * 1.5);
-    setPullDistance(resistedDistance);
+    if (distance > 0) {
+      // Prevent default scrolling when pulling down at top
+      e.preventDefault();
+      
+      // Apply resistance for natural feel
+      const resistedDistance = Math.min(distance * 0.4, threshold * 1.5);
+      setPullDistance(resistedDistance);
+    }
   }, [isPulling, disabled, isRefreshing, threshold]);
 
   const handleTouchEnd = useCallback(async () => {
@@ -61,7 +80,7 @@ export function PullToRefresh({
     
     if (pullDistance >= threshold && !isRefreshing) {
       setIsRefreshing(true);
-      setPullDistance(threshold * 0.6); // Keep indicator visible during refresh
+      setPullDistance(threshold * 0.5);
       
       try {
         await onRefresh();
@@ -76,39 +95,55 @@ export function PullToRefresh({
     }
     
     startY.current = 0;
-    currentY.current = 0;
   }, [isPulling, pullDistance, threshold, isRefreshing, onRefresh, disabled]);
 
+  // Attach touch listeners to document for better capture
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const options = { passive: false };
+    
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, options);
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
+    container.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
+      container.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+
   const progress = Math.min(pullDistance / threshold, 1);
-  const showIndicator = pullDistance > 10 || isRefreshing;
+  const showIndicator = pullDistance > 5 || isRefreshing;
 
   return (
     <div 
       ref={containerRef}
-      className={cn("relative overflow-auto", className)}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      className={cn("relative", className)}
     >
       {/* Pull indicator */}
       <div 
         className={cn(
-          "absolute left-1/2 -translate-x-1/2 z-20 transition-all duration-200",
+          "fixed left-1/2 z-50 transition-all duration-200 pointer-events-none",
           showIndicator ? "opacity-100" : "opacity-0"
         )}
         style={{ 
-          top: Math.max(8, pullDistance - 40),
+          top: `calc(env(safe-area-inset-top, 0px) + ${Math.max(8, pullDistance - 30)}px)`,
           transform: `translateX(-50%) scale(${0.8 + progress * 0.2})`
         }}
       >
         <div className={cn(
           "flex items-center justify-center w-10 h-10 rounded-full",
-          "bg-background border shadow-lg",
-          isRefreshing && "bg-primary/10"
+          "bg-background border-2 shadow-lg",
+          isRefreshing && "bg-primary/10 border-primary/30"
         )}>
           <RefreshCw 
             className={cn(
-              "h-5 w-5 text-primary transition-transform duration-200",
+              "h-5 w-5 text-primary transition-transform",
               isRefreshing && "animate-spin"
             )}
             style={{ 
@@ -120,9 +155,9 @@ export function PullToRefresh({
 
       {/* Content with pull offset */}
       <div 
-        className="transition-transform duration-200 ease-out"
+        className="transition-transform ease-out"
         style={{ 
-          transform: showIndicator ? `translateY(${pullDistance}px)` : undefined,
+          transform: showIndicator ? `translateY(${pullDistance}px)` : 'translateY(0)',
           transitionDuration: isPulling ? '0ms' : '200ms'
         }}
       >
