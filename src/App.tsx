@@ -12,6 +12,7 @@ import MobileApp from "./pages/MobileApp";
 import Onboarding from "./pages/Onboarding";
 import ParentDashboard from "./pages/ParentDashboard";
 import Insights from "./pages/Insights";
+import Settings from "./pages/Settings";
 import { NativeAppProvider } from "./components/NativeAppProvider";
 import { InterventionProvider } from "./components/interventions/InterventionProvider";
 
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/parent" element={<ParentDashboard />} />
                 <Route path="/insights" element={<Insights />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<MobileApp />} />
               </Routes>
             </NativeAppProvider>
@@ -45,6 +47,7 @@ const App = () => (
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/parent" element={<ParentDashboard />} />
               <Route path="/insights" element={<Insights />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/test" element={<Test />} />
               <Route path="/mobile" element={<MobileApp />} />
               <Route path="*" element={<NotFound />} />
