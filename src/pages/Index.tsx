@@ -15,7 +15,7 @@ import { UsageStats } from '@/components/UsageStats';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LogOut, Settings, RefreshCw, Sparkles } from 'lucide-react';
+import { LogOut, Settings, RefreshCw, Sparkles, BarChart3 } from 'lucide-react';
 
 export default function Index() {
   const navigate = useNavigate();
@@ -204,7 +204,15 @@ export default function Index() {
             </h2>
           </div>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
+            <Button 
+              variant="outline" 
+              className="h-auto py-4 flex flex-col gap-1"
+              onClick={() => navigate('/insights')}
+            >
+              <BarChart3 className="h-5 w-5" />
+              <span className="text-xs">Insights</span>
+            </Button>
             <Button 
               variant="outline" 
               className="h-auto py-4 flex flex-col gap-1"
