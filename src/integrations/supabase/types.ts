@@ -661,7 +661,7 @@ export type Database = {
         | "risk_agent"
         | "intervention_agent"
         | "feedback_agent"
-      app_role: "admin" | "parent" | "youth"
+      app_role: "admin" | "parent" | "youth" | "adult"
       event_type:
         | "app_open"
         | "app_close"
@@ -819,7 +819,7 @@ export const Constants = {
         "intervention_agent",
         "feedback_agent",
       ],
-      app_role: ["admin", "parent", "youth"],
+      app_role: ["admin", "parent", "youth", "adult"],
       event_type: [
         "app_open",
         "app_close",
