@@ -3,12 +3,13 @@
  * Main screen for the native mobile app with validation status
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNativeApp } from '@/components/NativeAppProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import SDK from '@/sdk';
 import type { RiskState } from '@/sdk/risk/getRiskState';
 import type { Intervention } from '@/sdk/interventions/interventionTypes';
@@ -82,7 +83,7 @@ export default function MobileApp() {
     };
   }, [isAuthenticated, sdkInitialized, realtimeConnected]);
 
-  const refreshState = async () => {
+  const refreshState = useCallback(async () => {
     addLog('🔄 Refreshing state...');
     const [riskResult, interventionsResult] = await Promise.all([
       SDK.risk.getState(),
@@ -98,7 +99,7 @@ export default function MobileApp() {
       setInterventions(interventionsResult.interventions);
       addLog(`Interventions: ${interventionsResult.interventions.length}`);
     }
-  };
+  }, []);
 
   const handleScroll = async () => {
     const velocity = Math.floor(Math.random() * 2000 + 500);
@@ -168,7 +169,7 @@ export default function MobileApp() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <PullToRefresh onRefresh={refreshState} className="min-h-screen bg-background">
       {/* Status Bar Spacer */}
       <div className="h-safe-top bg-primary" />
 
@@ -358,6 +359,6 @@ export default function MobileApp() {
 
       {/* Bottom Safe Area */}
       <div className="h-safe-bottom" />
-    </div>
+    </PullToRefresh>
   );
 }
