@@ -7,17 +7,89 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { Ticket, CheckCircle2 } from "lucide-react";
 import SDK from "@/sdk";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
+  const [codeValidated, setCodeValidated] = useState(false);
+  const [validatingCode, setValidatingCode] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const validateInviteCode = async () => {
+    if (!inviteCode.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Invite code required",
+        description: "Please enter your alpha invite code",
+      });
+      return;
+    }
+
+    setValidatingCode(true);
+
+    const { data, error } = await supabase
+      .from('invite_codes')
+      .select('id, code, expires_at, used_by')
+      .eq('code', inviteCode.trim().toUpperCase())
+      .maybeSingle();
+
+    if (error || !data) {
+      toast({
+        variant: "destructive",
+        title: "Invalid code",
+        description: "This invite code doesn't exist",
+      });
+      setValidatingCode(false);
+      return;
+    }
+
+    // Check if already used
+    if (data.used_by) {
+      toast({
+        variant: "destructive",
+        title: "Code already used",
+        description: "This invite code has already been redeemed",
+      });
+      setValidatingCode(false);
+      return;
+    }
+
+    // Check if expired
+    if (new Date(data.expires_at) < new Date()) {
+      toast({
+        variant: "destructive",
+        title: "Code expired",
+        description: "This invite code has expired",
+      });
+      setValidatingCode(false);
+      return;
+    }
+
+    setCodeValidated(true);
+    setValidatingCode(false);
+    toast({
+      title: "Code validated!",
+      description: "You can now create your account",
+    });
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!codeValidated) {
+      toast({
+        variant: "destructive",
+        title: "Validate code first",
+        description: "Please validate your invite code before signing up",
+      });
+      return;
+    }
+
     setLoading(true);
 
     const { data, error } = await supabase.auth.signUp({
@@ -34,7 +106,20 @@ export default function Auth() {
         title: "Sign up failed",
         description: error.message,
       });
-    } else if (data.session && data.user) {
+      setLoading(false);
+      return;
+    }
+    
+    if (data.session && data.user) {
+      // Mark invite code as used
+      await supabase
+        .from('invite_codes')
+        .update({ 
+          used_by: data.user.id, 
+          used_at: new Date().toISOString() 
+        })
+        .eq('code', inviteCode.trim().toUpperCase());
+
       // Save token to SDK's TokenManager
       await SDK.auth.setToken(data.session.access_token, data.user.id);
       
@@ -102,7 +187,7 @@ export default function Auth() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Mindful Engine</CardTitle>
           <CardDescription>
-            Sign up or log in to get started
+            Alpha Testing Program
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -144,32 +229,76 @@ export default function Auth() {
             
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
+                {/* Invite Code Section */}
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Label htmlFor="invite-code" className="flex items-center gap-2">
+                    <Ticket className="h-4 w-4" />
+                    Invite Code
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="invite-code"
+                      type="text"
+                      placeholder="Enter invite code"
+                      value={inviteCode}
+                      onChange={(e) => {
+                        setInviteCode(e.target.value.toUpperCase());
+                        setCodeValidated(false);
+                      }}
+                      disabled={codeValidated}
+                      className={codeValidated ? "bg-muted border-green-500" : ""}
+                      required
+                    />
+                    {codeValidated ? (
+                      <div className="flex items-center px-3 text-green-600">
+                        <CheckCircle2 className="h-5 w-5" />
+                      </div>
+                    ) : (
+                      <Button 
+                        type="button" 
+                        variant="secondary"
+                        onClick={validateInviteCode}
+                        disabled={validatingCode || !inviteCode.trim()}
+                      >
+                        {validatingCode ? "..." : "Verify"}
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Alpha access requires a valid invite code
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="••••••••"
-                    minLength={6}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Creating account..." : "Create Account"}
-                </Button>
+
+                {codeValidated && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        placeholder="••••••••"
+                        minLength={6}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "Creating account..." : "Create Account"}
+                    </Button>
+                  </>
+                )}
               </form>
             </TabsContent>
           </Tabs>
