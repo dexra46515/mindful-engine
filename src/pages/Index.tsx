@@ -3,7 +3,7 @@
  * Main app view with risk indicator, session timer, and usage stats
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -12,6 +12,7 @@ import { useCurrentSession } from '@/hooks/useCurrentSession';
 import { RiskRing } from '@/components/RiskRing';
 import { SessionTimer } from '@/components/SessionTimer';
 import { UsageStats } from '@/components/UsageStats';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -75,9 +76,9 @@ export default function Index() {
     }
   }, [roleLoading, userId, hasRole, role, navigate]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     await Promise.all([refetchRisk(), refetchSession()]);
-  };
+  }, [refetchRisk, refetchSession]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -100,7 +101,7 @@ export default function Index() {
   const isLoading = riskLoading || sessionLoading;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20 pt-safe pb-safe">
+    <PullToRefresh onRefresh={handleRefresh} className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20 pt-safe pb-safe">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b">
         <div className="flex items-center justify-between px-4 py-3">
@@ -232,6 +233,6 @@ export default function Index() {
           </div>
         </section>
       </main>
-    </div>
+    </PullToRefresh>
   );
 }
