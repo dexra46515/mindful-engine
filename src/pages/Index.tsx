@@ -13,6 +13,7 @@ import { RiskRing } from '@/components/RiskRing';
 import { SessionTimer } from '@/components/SessionTimer';
 import { UsageStats } from '@/components/UsageStats';
 import { PullToRefresh } from '@/components/PullToRefresh';
+import { AppFooter } from '@/components/AppFooter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -233,6 +234,9 @@ export default function Index() {
           </div>
         </section>
       </main>
+
+      {/* Footer */}
+      <AppFooter showDemo={false} />
     </PullToRefresh>
   );
 }
