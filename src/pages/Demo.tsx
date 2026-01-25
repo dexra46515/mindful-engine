@@ -725,6 +725,32 @@ function CompleteStep({ onRestart }: { onRestart: () => void }) {
         </Card>
       </div>
 
+      {/* Test Accounts for Apple Review */}
+      <div className="mt-8 p-6 bg-muted/50 rounded-lg max-w-lg mx-auto">
+        <h3 className="font-semibold mb-4 text-center">Test Accounts for Apple Review</h3>
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between p-2 bg-background rounded">
+            <span className="text-muted-foreground">Parent Account:</span>
+            <span className="font-mono">parent-test@example.com</span>
+          </div>
+          <div className="flex justify-between p-2 bg-background rounded">
+            <span className="text-muted-foreground">Youth Account:</span>
+            <span className="font-mono">youth-test@example.com</span>
+          </div>
+          <div className="flex justify-between p-2 bg-background rounded">
+            <span className="text-muted-foreground">Test Password:</span>
+            <span className="font-mono">TestDemo2025!</span>
+          </div>
+          <div className="flex justify-between p-2 bg-background rounded">
+            <span className="text-muted-foreground">Invite Code:</span>
+            <span className="font-mono">TEST-2025-DEMO</span>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground mt-4 text-center">
+          The parent account has pre-linked the youth account for testing.
+        </p>
+      </div>
+
       <Button onClick={onRestart} className="mt-8">
         Restart Demo
       </Button>
