@@ -15,6 +15,8 @@ import Insights from "./pages/Insights";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import Demo from "./pages/Demo";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import { NativeAppProvider } from "./components/NativeAppProvider";
 import { InterventionProvider } from "./components/interventions/InterventionProvider";
 
@@ -54,6 +56,8 @@ const App = () => (
               <Route path="/test" element={<Test />} />
               <Route path="/mobile" element={<MobileApp />} />
               <Route path="/demo" element={<Demo />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           )}
