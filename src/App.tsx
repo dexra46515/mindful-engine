@@ -14,6 +14,7 @@ import ParentDashboard from "./pages/ParentDashboard";
 import Insights from "./pages/Insights";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
+import Demo from "./pages/Demo";
 import { NativeAppProvider } from "./components/NativeAppProvider";
 import { InterventionProvider } from "./components/interventions/InterventionProvider";
 
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/test" element={<Test />} />
               <Route path="/mobile" element={<MobileApp />} />
+              <Route path="/demo" element={<Demo />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           )}
