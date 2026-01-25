@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,10 @@ import {
   Mail,
   AlertTriangle,
   TrendingUp,
-  Clock
+  Clock,
+  FileText,
+  Shield,
+  ExternalLink
 } from 'lucide-react';
 
 type Theme = 'light' | 'dark' | 'system';
@@ -483,6 +486,49 @@ export default function Settings() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Legal & Info Section */}
+        <div className="mt-8 pt-6 border-t">
+          <h3 className="text-sm font-medium text-muted-foreground mb-4">Legal & Information</h3>
+          <div className="grid grid-cols-1 gap-2">
+            <Link to="/privacy">
+              <Button variant="ghost" className="w-full justify-start h-auto py-3">
+                <FileText className="h-4 w-4 mr-3" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Privacy Policy</p>
+                  <p className="text-xs text-muted-foreground">How we handle your data</p>
+                </div>
+                <ExternalLink className="h-4 w-4 ml-auto text-muted-foreground" />
+              </Button>
+            </Link>
+            <Link to="/terms">
+              <Button variant="ghost" className="w-full justify-start h-auto py-3">
+                <FileText className="h-4 w-4 mr-3" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Terms of Service</p>
+                  <p className="text-xs text-muted-foreground">Usage agreement</p>
+                </div>
+                <ExternalLink className="h-4 w-4 ml-auto text-muted-foreground" />
+              </Button>
+            </Link>
+            <Link to="/demo">
+              <Button variant="ghost" className="w-full justify-start h-auto py-3">
+                <Shield className="h-4 w-4 mr-3" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Parental Control Demo</p>
+                  <p className="text-xs text-muted-foreground">Interactive consent flow walkthrough</p>
+                </div>
+                <ExternalLink className="h-4 w-4 ml-auto text-muted-foreground" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* App Info */}
+        <div className="mt-6 text-center text-xs text-muted-foreground">
+          <p>Mindful Balance Engine v1.0.0</p>
+          <p className="mt-1">© {new Date().getFullYear()} All rights reserved</p>
+        </div>
       </main>
     </div>
   );

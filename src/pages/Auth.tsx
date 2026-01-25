@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -302,6 +302,23 @@ export default function Auth() {
               </form>
             </TabsContent>
           </Tabs>
+
+          {/* Footer Links */}
+          <div className="mt-6 pt-4 border-t text-center">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <Link to="/privacy" className="hover:text-primary transition-colors">
+                Privacy Policy
+              </Link>
+              <span className="text-muted-foreground/40">•</span>
+              <Link to="/terms" className="hover:text-primary transition-colors">
+                Terms of Service
+              </Link>
+              <span className="text-muted-foreground/40">•</span>
+              <Link to="/demo" className="hover:text-primary transition-colors">
+                Demo
+              </Link>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
