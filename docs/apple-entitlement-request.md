@@ -6,10 +6,10 @@
 
 ### 1. Company Information
 
-**Company Name:** [Your Company Name]  
-**Developer Account:** [Apple Developer Team ID]  
-**Contact Email:** [contact@yourcompany.com]  
-**Website:** [https://yourcompany.com]  
+**Company Name:** Dominic Prabhu (Sole Proprietor)  
+**Developer Account:** WN8GUJ2936  
+**Contact Email:** dominic@agentbill.io  
+**Website:** TBD  
 **App Name:** Mindful Balance Engine  
 **Bundle ID:** app.lovable.b9bc557477734076b710d1364bf57e42
 
@@ -283,15 +283,15 @@ We can provide upon request:
 ### 12. Contact for Review
 
 **Primary Contact:**  
-Name: [Your Name]  
-Role: [Your Title]  
-Email: [your.email@company.com]  
-Phone: [+1-XXX-XXX-XXXX]
+Name: Dominic Prabhu  
+Role: Founder & CEO  
+Email: dominic@agentbill.io  
+Phone: +44 7466 400071
 
 **Technical Contact:**  
-Name: [Developer Name]  
-Role: Lead Developer  
-Email: [developer@company.com]
+Name: Dominic Prabhu  
+Role: Founder & Lead Developer  
+Email: dominic@agentbill.io
 
 ---
 
@@ -309,9 +309,9 @@ We hereby declare that:
 **Authorized Signature:**
 
 _________________________  
-[Your Name]  
-[Title]  
-[Date]
+Dominic Prabhu  
+Founder & CEO  
+January 2025
 
 ---
 
